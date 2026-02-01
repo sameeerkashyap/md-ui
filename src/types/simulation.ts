@@ -18,6 +18,7 @@ export interface Atom {
   name: string;
   residue: string;
   chain: string;
+  residue_index?: number;
   color: RGBColor;
 }
 
@@ -29,6 +30,7 @@ export interface SimulationBounds {
 
 export interface SimulationMetadata {
   source: string;
+  title: string;
   num_frames: number;
   num_atoms: number;
   bounds: SimulationBounds;

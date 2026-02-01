@@ -3,7 +3,7 @@ import MolecularView from '../components/MolecularView';
 import Controls from '../components/Controls';
 import FileUploader from '../components/FileUploader';
 import { TrajectoryData } from '../types/simulation';
-import defaultTrajectoryData from '../data/4HHB_animated.json';
+import defaultTrajectoryData from '../data/4HHB.json';
 
 const defaultTrajectory = defaultTrajectoryData as unknown as TrajectoryData;
 

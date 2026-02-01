@@ -19,15 +19,20 @@ const CPK_COLORS: { [key: string]: RGBColor } = {
 export function parsePDB(content: string, fileName: string): TrajectoryData {
     const lines = content.split('\n');
     const atoms: Atom[] = [];
-    
+
     // Limits
     let minX = Infinity, minY = Infinity, minZ = Infinity;
     let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
-    
+    let title = ''
+
     // Track stats
     let sumX = 0, sumY = 0, sumZ = 0;
 
     for (const line of lines) {
+        if (!title && line.startsWith('TITLE')) {
+            title = line.substring(10, 80).trim();
+        }
+
         // Standard PDB format is fixed-width
         // ATOM/HETATM is chars 0-6
         if (line.startsWith('ATOM') || line.startsWith('HETATM')) {
@@ -35,11 +40,13 @@ export function parsePDB(content: string, fileName: string): TrajectoryData {
             const x = parseFloat(line.substring(30, 38));
             const y = parseFloat(line.substring(38, 46));
             const z = parseFloat(line.substring(46, 54));
-            
+
             const atomName = line.substring(12, 16).trim();
             const residue = line.substring(17, 20).trim();
             const chain = line.substring(21, 22).trim();
-            
+            // Parse Residue Sequence Number (Column 23-26)
+            const residueIndex = parseInt(line.substring(22, 26).trim(), 10);
+
             // CPK Color lookup
             const color = CPK_COLORS[element.toUpperCase()] || CPK_COLORS['C']; // Default to C/Gray
 
@@ -49,11 +56,12 @@ export function parsePDB(content: string, fileName: string): TrajectoryData {
                 name: atomName,
                 residue,
                 chain,
+                residue_index: residueIndex,
                 color
             };
-            
+
             atoms.push(atom);
-            
+
             // Stats
             minX = Math.min(minX, x); minY = Math.min(minY, y); minZ = Math.min(minZ, z);
             maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); maxZ = Math.max(maxZ, z);
@@ -71,6 +79,7 @@ export function parsePDB(content: string, fileName: string): TrajectoryData {
     return {
         metadata: {
             source: fileName,
+            title: title,
             num_frames: 1, // Basic PDB usually has 1 model or we treat as static
             num_atoms: numAtoms,
             bounds: {

@@ -806,8 +806,8 @@ export default function App() {
                 key={idx}
                 onClick={() => setActiveStep(idx)}
                 className={`p-3 rounded-lg transition-all ${activeStep === idx
-                    ? `bg-gradient-to-br ${step.color} text-white shadow-lg scale-105`
-                    : 'bg-gray-800/50 text-gray-500 hover:bg-gray-800'
+                  ? `bg-gradient-to-br ${step.color} text-white shadow-lg scale-105`
+                  : 'bg-gray-800/50 text-gray-500 hover:bg-gray-800'
                   }`}
               >
                 <div className="flex flex-col items-center gap-1">

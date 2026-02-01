@@ -1,0 +1,24 @@
+# Molecular Dynamics Simulation Requirements
+# Install with: pip install -r requirements.txt
+
+# Core simulation engine
+openmm==8.1.1
+
+# Data processing and analysis
+numpy==1.26.4
+scipy==1.12.0
+
+# PDB file parsing and manipulation
+biopython==1.83
+
+# Optional: Enhanced analysis capabilities
+# mdtraj==1.9.9
+
+# Data serialization
+pandas==2.2.1
+
+# Progress bars for long simulations
+tqdm==4.66.2
+
+# Optional: Visualization (if you want to check results in Python)
+matplotlib==3.8.3

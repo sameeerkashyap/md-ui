@@ -43,6 +43,18 @@ export default function BackboneView({ atoms, selectedChain, onSelect, onDeselec
 
     return (
         <group>
+            {/* Invisible background plane for click-to-deselect */}
+            <mesh
+                position={[0, 0, -50]}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onDeselect();
+                }}
+            >
+                <planeGeometry args={[1000, 1000]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
             {Object.entries(chains).map(([chainId, chainAtoms]) => {
                 // Create points path for the line
                 const points = chainAtoms.map(a => new Vector3(a.x, a.y, a.z));
@@ -54,7 +66,10 @@ export default function BackboneView({ atoms, selectedChain, onSelect, onDeselec
 
                 return (
                     <group key={chainId}
-                        onClick={() => onSelect(chainId)}
+                        onClick={(e) => {
+                            e.stopPropagation(); // Prevent background click
+                            onSelect(chainId);
+                        }}
                     >
                         {/* The Ribbon Line */}
                         <Line

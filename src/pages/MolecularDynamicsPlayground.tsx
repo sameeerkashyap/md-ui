@@ -48,13 +48,13 @@ export default function MolecularDynamicsPlayground() {
             )}
 
             <MolecularView trajectory={trajectory} currentFrame={currentFrame} />
-            <Controls
+            {/* <Controls
                 isPlaying={isPlaying}
                 setIsPlaying={setIsPlaying}
                 currentFrame={currentFrame}
                 totalFrames={totalFrames}
                 onFrameChange={setCurrentFrame}
-            />
+            /> */}
         </div>
     );
 }

@@ -4,10 +4,13 @@ import { Center } from "@react-three/drei";
 import BackboneView from "./BackboneView";
 import { Atom, TrajectoryData } from "../types/simulation";
 import { ViewConfiguration } from "../types/viewState";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import ChainInfoPanel from './ChainInfoPanel';
 import { calculateChainInfo, ChainInfo } from "../types/chainMetadata";
+import { checkWebGPUSupport, initWebGPU, WebGPUContextResult } from "../gpu/WebGpuContext";
+import GPUAtomRenderer from "./GPUAtomRenderer";
+import { FPSDisplay } from './FPSCounter';
 
 export default function MolecularView({ trajectory, currentFrame }: { trajectory: TrajectoryData, currentFrame: number }) {
     // --------------------------------------------------------
@@ -23,6 +26,20 @@ export default function MolecularView({ trajectory, currentFrame }: { trajectory
         showLigands: true,
         unselectedOpacity: 0.5
     });
+
+    const [gpuContext, setGpuContext] = useState<WebGPUContextResult | null>(null);
+
+    useEffect(() => {
+        async function setupGPU() {
+            if (checkWebGPUSupport()) {
+                const context = await initWebGPU();
+                setGpuContext(context);
+            } else {
+                console.warn('WebGPU not supported, using WebGL fallback');
+            }
+        }
+        setupGPU();
+    }, []);
 
     // TODO: Initialize Selection State
     const [selectedChain, setSelectedChain] = useState<string | null>(null);
@@ -65,22 +82,42 @@ export default function MolecularView({ trajectory, currentFrame }: { trajectory
     const totalChains = Object.keys(chainMetadataMap).length;
 
     if (!atoms) return <div className="absolute inset-0 flex items-center justify-center text-white/50">No Data</div>;
+    const useGPU = atoms.length > 10000;
 
     return (
         <div style={{ width: '100vw', height: '100vh' }}>
+            {/* Title */}
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
                 <h1 className="text-xl font-bold text-black">{title}</h1>
             </div>
+
+            {/* FPS Counter */}
+            <FPSDisplay
+                atomCount={atoms.length}
+                rendererType={useGPU ? 'WebGPU' : 'CPU'}
+            />
+
             <Canvas camera={{ position: [0, 0, 50], fov: 50 }}>
                 <color attach="background" args={['#FFFF']} />
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} />
                 <Center>
-                    <BackboneView atoms={atoms}
-                        selectedChain={selectedChain}
-                        onSelect={handleChainSelect}
-                        onDeselect={handleChainDeselect}
-                    />
+                    {useGPU ? (
+                        <GPUAtomRenderer
+                            atoms={atoms}
+                            selectedChain={selectedChain}
+                            onSelect={handleChainSelect}
+                            onDeselect={handleChainDeselect}
+                        />
+                    ) : (
+                        <BackboneView
+                            atoms={atoms}
+                            selectedChain={selectedChain}
+                            onSelect={handleChainSelect}
+                            onDeselect={handleChainDeselect}
+                        />
+                    )}
+
                     {/* 
                       TODO: CONDITIONAL RENDERING BASED ON VIEW CONFIG
                       

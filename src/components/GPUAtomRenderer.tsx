@@ -42,7 +42,6 @@ export default function GPUAtomRenderer({
     // ========================================================================
 
     // GPU context (device, adapter)
-    // TODO: Initialize this in useEffect
     const [gpuContext, setGpuContext] = useState<WebGPUContextResult | null>(null);
 
     // GPU pipeline and bind group
@@ -56,12 +55,7 @@ export default function GPUAtomRenderer({
     // Three.js instanced mesh
     const meshRef = useRef<THREE.InstancedMesh | null>(null);
 
-    // ========================================================================
-    // STEP 1: Initialize WebGPU (runs once on component mount)
-    // ========================================================================
-
     useEffect(() => {
-        // TODO: Add async initialization
         async function init() {
             if (!checkWebGPUSupport()) {
                 console.warn('WebGPU not supported, falling back to CPU rendering');
@@ -88,14 +82,10 @@ export default function GPUAtomRenderer({
         };
     }, [enabled]);
 
-    // ========================================================================
-    // STEP 2: Create GPU Buffers (runs when atoms or GPU context changes)
-    // ========================================================================
-
     useEffect(() => {
         if (!gpuContext || !atoms.length) return;
 
-        // TODO: Convert atom data to Float32Array
+        // Convert atom data to Float32Array
         // Format: [x, y, z, radius, x, y, z, radius, ...]
         // 4 floats per atom
         const atomData = new Float32Array(atoms.length * 4);
@@ -123,10 +113,6 @@ export default function GPUAtomRenderer({
 
     }, [gpuContext, atoms]);
 
-    // ========================================================================
-    // STEP 3: Create Compute Pipeline (runs once after buffers are created)
-    // ========================================================================
-
     useEffect(() => {
         if (!gpuContext || !inputBufferRef.current || !outputBufferRef.current) return;
 
@@ -134,15 +120,11 @@ export default function GPUAtomRenderer({
             if (!gpuContext) return;
 
             try {
-                // TODO: Load shader code
-                // Option 1: Import as string (requires Vite raw plugin)
-                // import shaderCode from './shaders/atomUpdate.wgsl?raw';
-
-                // Option 2: Fetch at runtime
+                // Load shader code
                 const response = await fetch('/shaders/atomUpdate.wgsl');
                 const shaderCode = await response.text();
 
-                // TODO: For now, use inline shader for testing
+                // For now, use inline shader for testing
                 // const shaderCode = `
                 //     @group(0) @binding(0) var<storage, read> atomsIn: array<vec4<f32>>;
                 //     @group(0) @binding(1) var<storage, read_write> atomsOut: array<vec4<f32>>;
@@ -158,14 +140,12 @@ export default function GPUAtomRenderer({
                 //     }
                 // `;
 
-                // TODO: Create pipeline
                 const pipeline = await createAtomUpdatePipeline(
                     gpuContext.device,
                     shaderCode
                 );
                 pipelineRef.current = pipeline;
 
-                // TODO: Create bind group
                 const bindGroup = createBindGroup(
                     gpuContext.device,
                     pipeline,
@@ -182,14 +162,9 @@ export default function GPUAtomRenderer({
         setupPipeline();
     }, [gpuContext, atoms]);
 
-    // ========================================================================
-    // STEP 4: Animation Loop (runs every frame)
-    // ========================================================================
-
     useFrame((state, delta) => {
         if (!gpuContext || !pipelineRef.current || !bindGroupRef.current) return;
 
-        // TODO: Run compute shader
         runComputePass(
             gpuContext.device,
             pipelineRef.current,
@@ -197,17 +172,12 @@ export default function GPUAtomRenderer({
             atoms.length
         );
 
-        // TODO: Update Three.js mesh from GPU buffer
-        // The tricky part: We need to map the GPU buffer to Three.js
-        // This requires reading the GPU buffer back to CPU (temporary limitation)
-        // In the future, Three.js WebGPU renderer can use the buffer directly
-
-        // For now, we'll use a hybrid approach:
+        // Update Three.js mesh from GPU buffer, Hybrid approach:
         // 1. Compute shader updates positions
         // 2. Read back to CPU (once per frame)
         // 3. Update Three.js instance matrix
 
-        // TODO: Read back GPU buffer (temporary workaround)
+        // Read back GPU buffer (temporary workaround)
         async function updateMesh() {
             if (!meshRef.current || !outputBufferRef.current) return;
 
@@ -246,10 +216,6 @@ export default function GPUAtomRenderer({
         }
         updateMesh();
     });
-
-    // ========================================================================
-    // RENDERING
-    // ========================================================================
 
     // If GPU not ready, show nothing (or fallback to BackboneView)
     if (!gpuContext) {
@@ -327,29 +293,3 @@ export default function GPUAtomRenderer({
         </group>
     );
 }
-
-/**
- * INTEGRATION GUIDE:
- * 
- * 1. In MolecularView.tsx, add a toggle:
- * 
- *    const useGPU = atomCount > 50000;  // Use GPU for large proteins
- * 
- *    {useGPU ? (
- *        <GPUAtomRenderer atoms={atoms} />
- *    ) : (
- *        <BackboneView atoms={atoms} />
- *    )}
- * 
- * 2. Test with small protein first (1BQ0, ~1000 atoms)
- *    - Should work identical to BackboneView
- *    - Verify no errors in console
- * 
- * 3. Test with large protein (1AON, ~50000 atoms)
- *    - Should see FPS improvement
- *    - GPU DevTools (Chrome) shows compute shader running
- * 
- * 4. Profile performance:
- *    - Chrome DevTools > Performance > Record
- *    - Look for GPU activity instead of JavaScript
- */

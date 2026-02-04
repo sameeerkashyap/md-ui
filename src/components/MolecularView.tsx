@@ -17,31 +17,6 @@ export default function MolecularView({ trajectory, currentFrame }: { trajectory
     // STATE MANAGEMENT PLACEHOLDERS
     // --------------------------------------------------------
 
-    // TODO: Initialize View Configuration State
-    const [viewConfig, setViewConfig] = useState<ViewConfiguration>({
-        style: 'cartoon',
-        colorScheme: 'chain',
-        showWater: false,
-        showIons: true,
-        showLigands: true,
-        unselectedOpacity: 0.5
-    });
-
-    const [gpuContext, setGpuContext] = useState<WebGPUContextResult | null>(null);
-
-    useEffect(() => {
-        async function setupGPU() {
-            if (checkWebGPUSupport()) {
-                const context = await initWebGPU();
-                setGpuContext(context);
-            } else {
-                console.warn('WebGPU not supported, using WebGL fallback');
-            }
-        }
-        setupGPU();
-    }, []);
-
-    // TODO: Initialize Selection State
     const [selectedChain, setSelectedChain] = useState<string | null>(null);
 
     // Hover event handlers

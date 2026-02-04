@@ -10,7 +10,7 @@
 // ============================================================================
 // BUFFER BINDINGS
 // ============================================================================
-// These connect to the buffers you create in TypeScript
+// These connect to the buffers in TypeScript
 
 // Binding 0: Input atom positions (read-only)
 // Each vec4 contains: (x, y, z, radius)
@@ -51,19 +51,19 @@ var<storage, read_write> atomsOut: array<vec4<f32>>;
 @compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     
-    // STEP 1: Get the atom index for this thread
+    // Get the atom index for this thread
     let atomIndex = id.x;
     
-    // STEP 2: Bounds check (prevent out-of-bounds access)
+    // Bounds check (prevent out-of-bounds access)
     if atomIndex >= arrayLength(&atomsIn) {
         return;  // Exit early for extra threads
     }
     
-    // STEP 3: Read the input atom data
+    // Read the input atom data
     let currentPosition = atomsIn[atomIndex];
     
-    // STEP 4: Simple pass-through (no transformation for now)
+    // Simple pass-through (no transformation for now)
     atomsOut[atomIndex] = currentPosition;
     
-    // STEP 5: The atomsOut buffer is directly used by Three.js for rendering!
+    // The atomsOut buffer is directly used by Three.js for rendering!
 }

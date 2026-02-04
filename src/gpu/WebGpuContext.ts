@@ -16,58 +16,33 @@ export interface WebGPUContextResult {
  * 
  */
 export async function initWebGPU(): Promise<WebGPUContextResult | null> {
-    // STEP 1: Check if WebGPU is available in the browser
-    // TODO: Add this check:
     if (!navigator.gpu) {
         console.warn('WebGPU not supported in this browser');
         return null;
     }
 
-    // STEP 2: Request a GPU adapter (represents the physical GPU)
-    // TODO: Add this code:
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) {
         console.error('Failed to get GPU adapter');
         return null;
     }
 
-    // STEP 3: Request a GPU device (the logical connection to GPU)
-    // TODO: Add this code:
     const device = await adapter.requestDevice();
-
-    // STEP 4: Set up error handling
-    // TODO: Add this code:
     device.lost.then((info) => {
         console.error(`WebGPU device lost: ${info.message}`);
-        // Handle graceful degradation to WebGL here
     });
 
-    // STEP 5: Return the context
-    // TODO: Add this return:
     return { device, adapter };
-
-    // throw new Error('Not implemented - remove this line and uncomment TODOs above');
 }
 
-/**
- * Check WebGPU Support
- * 
- * TODO: Call this BEFORE trying to use WebGPU to show appropriate UI
- */
 export function checkWebGPUSupport(): boolean {
-    // STEP 1: Check if navigator.gpu exists
-    // TODO: Add this check:
     return 'gpu' in navigator;
-
-    // throw new Error('Not implemented - remove this line and uncomment TODO above');
 }
 
 /**
  * Create a GPU Storage Buffer
  * 
  * This is a helper function to create buffers that will hold atom data on the GPU.
- * 
- * TODO: Call this when uploading atom positions/colors to GPU
  * 
  * @param device - The GPU device from initWebGPU()
  * @param data - Float32Array containing atom data (positions, colors, etc.)
@@ -90,8 +65,6 @@ export function createStorageBuffer(
     buffer.unmap();
 
     return buffer;
-
-    // throw new Error('Not implemented - remove this line and uncomment TODOs above');
 }
 
 /**
